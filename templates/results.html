@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company }} Job Skills - Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            background-color: #f8f9fa;
+        }
+        .job-card {
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .skills-section {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .company-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-right: 10px;
+        }
+        .highlight {
+            background-color: #ffffcc;
+            padding: 2px;
+            border-radius: 3px;
+        }
+        .skill-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            margin: 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .tech-skill {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .soft-skill {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        #skillsChart {
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-10">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img src="https://logo.clearbit.com/{{ company.lower() }}.com" alt="{{ company }}" class="company-logo" onerror="this.src='https://via.placeholder.com/40?text={{ company[0] }}'">
+                        <h1 class="h2 mb-0">{{ company }} Job Skills</h1>
+                    </div>
+                    <a href="/" class="btn btn-outline-primary">Back to Companies</a>
+                </div>
+                <hr>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h2 class="h5 mb-0">Skills Analysis</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Found <strong>{{ results|length }}</strong> job listings with the following skills:</p>
+                        
+                        <div id="skillsChart" style="height: 300px;"></div>
+                        
+                        <div class="d-flex flex-wrap" id="commonSkills">
+                            <!-- Skills tags will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <h2 class="h4 mb-3">Job Listings</h2>
+                
+                <div class="mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search for skills or job titles...">
+                </div>
+                
+                <div id="jobListings">
+                    {% for job in results %}
+                    <div class="card job-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3 class="h5 mb-0">{{ job.job_title }}</h3>
+                            {% if job.url %}
+                            <a href="{{ job.url }}" target="_blank" class="btn btn-sm btn-outline-primary">View Job</a>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h4 class="h6">Required Skills:</h4>
+                            <div class="skills-section">
+                                <p>{{ job.skills }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-center mt-4 mb-5">
+                    <a href="/" class="btn btn-primary">Scrape Another Company</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Include Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Function to extract common skills from job descriptions
+        function extractCommonSkills() {
+            const jobSkills = document.querySelectorAll('.skills-section p');
+            const skillsMap = new Map();
+            
+            // Common tech skills to look for
+            const techSkills = [
+                'Python', 'Java', 'JavaScript', 'C++', 'C#', 'Ruby', 'Go', 'Rust', 'Swift',
+                'React', 'Angular', 'Vue', 'Node.js', 'Django', 'Flask', 'Spring', 'ASP.NET',
+                'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'SQL', 'NoSQL', 'MongoDB',
+                'PostgreSQL', 'MySQL', 'Redis', 'Kafka', 'Hadoop', 'Spark', 'TensorFlow',
+                'PyTorch', 'Machine Learning', 'AI', 'Data Science', 'Big Data', 'DevOps',
+                'CI/CD', 'Git', 'REST API', 'GraphQL', 'Microservices', 'Agile', 'Scrum'
+            ];
+            
+            // Common soft skills to look for
+            const softSkills = [
+                'Communication', 'Teamwork', 'Problem-solving', 'Leadership', 'Time management',
+                'Critical thinking', 'Adaptability', 'Collaboration', 'Creativity', 'Attention to detail',
+                'Project management', 'Analytical', 'Interpersonal', 'Self-motivated', 'Organizational'
+            ];
+            
+            // Combine all skills
+            const allSkills = [...techSkills, ...softSkills];
+            
+            // Count occurrences of each skill
+            jobSkills.forEach(skillText => {
+                const text = skillText.textContent.toLowerCase();
+                
+                allSkills.forEach(skill => {
+                    const skillLower = skill.toLowerCase();
+                    if (text.includes(skillLower)) {
+                        skillsMap.set(skill, (skillsMap.get(skill) || 0) + 1);
+                    }
+                });
+            });
+            
+            // Sort skills by frequency
+            const sortedSkills = [...skillsMap.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 20); // Get top 20 skills
+            
+            // Display skills as tags
+            const skillsContainer = document.getElementById('commonSkills');
+            sortedSkills.forEach(([skill, count]) => {
+                const skillClass = techSkills.includes(skill) ? 'tech-skill' : 'soft-skill';
+                const tag = document.createElement('span');
+                tag.className = `skill-tag ${skillClass}`;
+                tag.textContent = `${skill} (${count})`;
+                skillsContainer.appendChild(tag);
+            });
+            
+            // Create chart data
+            const labels = sortedSkills.map(item => item[0]);
+            const data = sortedSkills.map(item => item[1]);
+            const backgroundColors = labels.map(label => 
+                techSkills.includes(label) ? 'rgba(83, 186, 215, 0.7)' : 'rgba(92, 184, 92, 0.7)'
+            );
+            
+            // Create chart
+            const ctx = document.createElement('canvas');
+            document.getElementById('skillsChart').appendChild(ctx);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Skill Frequency',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Mentioned in ${context.raw} job${context.raw !== 1 ? 's' : ''}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            return sortedSkills;
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const jobCards = document.querySelectorAll('.job-card');
+            
+            jobCards.forEach(card => {
+                const title = card.querySelector('.card-header h3').textContent.toLowerCase();
+                const skills = card.querySelector('.skills-section p').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || skills.includes(searchTerm)) {
+                    card.style.display = 'block';
+                    
+                    // Highlight the search term if it's in the skills
+                    if (searchTerm) {
+                        const skillsElement = card.querySelector('.skills-section p');
+                        let skillsText = skillsElement.textContent;
+                        
+                        // Create a regex that's case insensitive
+                        const regex = new RegExp(searchTerm, 'gi');
+                        
+                        // Replace with highlighted version
+                        skillsText = skillsText.replace(regex, match => `<span class="highlight">${match}</span>`);
+                        
+                        // Set the HTML (safe since we're only adding span tags)
+                        skillsElement.innerHTML = skillsText;
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // Run the skills extraction when the page loads
+        window.addEventListener('DOMContentLoaded', extractCommonSkills);
+    </script>
+</body>
+</html>

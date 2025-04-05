@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Signup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+
+body {
+    background: linear-gradient(135deg, var(--dark) 0%, #1a1a1a 100%);
+    font-family: var(--font-family-body);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    color: var(--light);
+}
+
+.signup-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 2.5rem;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+h2 {
+    font-family: var(--font-family-title);
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--accent);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--light);
+    font-weight: 500;
+}
+
+input {
+    width: 100%;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--light);
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+}
+
+.signup-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary);
+    border: none;
+    color: var(--light);
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.signup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.verify-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--secondary);
+    border: none;
+    color: var(--dark);
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+}
+
+.verify-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+}
+
+.error {
+    background: rgba(255, 107, 107, 0.2);
+    border-left: 4px solid var(--primary);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: var(--light);
+}
+
+.success {
+    background: rgba(76, 175, 80, 0.2);
+    border-left: 4px solid var(--success);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: var(--light);
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+a {
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+.otp-section {
+    display: none;
+}
+
+.verified-badge {
+    color: var(--success);
+    font-weight: bold;
+    display: none;
+}
+
+</style>
+{% if error %}
+<div class="error">{{ error }}</div>
+{% endif %}
+
+{% if success %}
+<div class="success">{{ success }}</div>
+{% endif %}
+
+<form id="signupForm" method="POST" action="{{ url_for('signup') }}">
+<div class="form-group">
+    <label>Full Name</label>
+    <input type="text" name="username" id="username" required>
+</div>
+<div class="form-group">
+    <label>Email</label>
+    <input type="email" name="email" id="email" required>
+</div>
+<div class="form-group">
+    <label>Password</label>
+    <input type="password" name="password" id="password" required>
+</div>
+<div class="form-group">
+    <label>Confirm Password</label>
+    <input type="password" name="confirm_password" id="confirm_password" required>
+</div>
+<button type="submit" class="signup-btn" id="signupBtn">Sign Up</button>
+</form>
+
+<div id="otpSection" class="otp-section">
+<div class="form-group">
+    <label>Enter OTP sent to your email</label>
+    <input type="text" name="otp" id="otp" required>
+    <span id="verifiedBadge" class="verified-badge">✓ Verified</span>
+</div>
+<button type="button" class="verify-btn" id="verifyBtn">Verify OTP</button>
+</div>
+
+<div class="login-link">
+<p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const signupForm = document.getElementById('signupForm');
+const otpSection = document.getElementById('otpSection');
+const verifyBtn = document.getElementById('verifyBtn');
+const verifiedBadge = document.getElementById('verifiedBadge');
+
+// Handle form submission
+signupForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
+    
+    // Send signup data to server
+    fetch('/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username: username,
+            email: email,
+            password: password
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show OTP verification section
+            signupForm.style.display = 'none';
+            otpSection.style.display = 'block';
+        } else {
+            alert(data.error || "Error during signup");
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("An error occurred during signup");
+    });
+});
+
+// Handle OTP verification
+verifyBtn.addEventListener('click', function() {
+    const otp = document.getElementById('otp').value;
+    const email = document.getElementById('email').value;
+    
+    fetch('/verify-otp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            otp: otp
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            verifiedBadge.style.display = 'inline';
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+        } else {
+            alert(data.error || "Invalid OTP");
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("An error occurred during verification");
+    });
+});
+});
+</script>

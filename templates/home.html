@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home | Surya Prabha</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --dark: #292F36;
+            --light: #F7F7F7;
+            --accent: #FFE66D;
+            --border-thick: 3px solid var(--dark);
+            --font-family-title: 'Bungee', sans-serif;
+            --font-family-body: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, #1a1a1a 100%);
+            font-family: var(--font-family-body);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: var(--light);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .welcome {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #ff4f4f;
+            transform: translateY(-2px);
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: var(--font-family-title);
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .card h2 {
+            color: var(--secondary);
+            margin-top: 0;
+        }
+
+        .card p {
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="welcome">Hi, {{ username }}</div>
+        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>
+    </div>
+
+    <div class="content">
+        <h1>Welcome to Surya Prabha</h1>
+        
+        <div class="card">
+            <h2>Your Account</h2>
+            <p>Username: {{ username }}</p>
+            <p>Email: {{ email }}</p>
+        </div>
+        
+        <div class="card">
+            <h2>Getting Started</h2>
+            <p>Thank you for joining Surya Prabha! This is your personalized dashboard where you can manage your account and access our services.</p>
+            <p>Feel free to explore the platform and discover all the features we offer.</p>
+        </div>
+    </div>
+
+    <script>
+        // You can add any client-side functionality here
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Home page loaded successfully');
+        });
+    </script>
+</body>
+</html>
